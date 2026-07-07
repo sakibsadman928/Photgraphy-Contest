@@ -87,7 +87,7 @@ export default function Nav() {
               </Link>
               <Link
                 href="/register"
-                className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-ink shadow-glow transition-transform hover:-translate-y-0.5 hover:bg-accent-hover"
+                className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-ink  transition-transform hover:-translate-y-0.5 hover:bg-accent-hover"
               >
                 Sign up
               </Link>
