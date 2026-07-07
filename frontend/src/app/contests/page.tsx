@@ -37,8 +37,8 @@ export default function BrowseContestsPage() {
             onClick={() => setFilter(f.value)}
             className={`rounded-full border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
               filter === f.value
-                ? "border-ink bg-ink text-white"
-                : "border-hairline text-ink-muted hover:border-ink hover:text-ink"
+                ? "border-accent bg-accent text-ink"
+                : "border-hairline text-ink-muted hover:border-accent hover:text-accent-text"
             }`}
           >
             {f.label}

@@ -27,13 +27,21 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Contact Sheet — Photography Competition Platform",
-  description: "Enter, judge, and follow photography competitions from registration to winner.",
+  title: "Shutter Showdown",
+  description:
+    "Enter, judge, and follow photography competitions from registration to winner.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${roboto.variable} ${poppins.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en"
+      className={`${roboto.variable} ${poppins.variable} ${jetbrainsMono.variable}`}
+    >
       <body>
         <ReduxProvider>
           <AuthProvider>

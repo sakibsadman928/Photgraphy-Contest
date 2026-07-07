@@ -21,43 +21,68 @@ export default function Nav() {
   };
 
   const dashboardHref =
-    user?.role === "admin" ? "/admin/dashboard" : user?.role === "judge" ? "/judge/dashboard" : "/dashboard";
+    user?.role === "admin"
+      ? "/admin/dashboard"
+      : user?.role === "judge"
+        ? "/judge/dashboard"
+        : "/dashboard";
 
   return (
     <header className="sticky top-0 z-30 border-b border-hairline bg-paper/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="font-display font-extrabold text-lg tracking-tight text-ink">
-          Contact <span className="text-accent-text">Sheet</span>
+        <Link
+          href="/"
+          className="font-display font-extrabold text-lg tracking-tight text-ink"
+        >
+          Shutter <span className="text-accent-text">Showdown</span>
         </Link>
 
         <nav className="flex items-center gap-6">
-          <Link href="/contests" className="text-sm font-medium text-ink hover:text-accent-text transition-colors">
+          <Link
+            href="/contests"
+            className="text-sm font-medium text-ink hover:text-accent-text transition-colors"
+          >
             Contests
           </Link>
 
           {isAuthenticated ? (
             <>
-              <Link href={dashboardHref} className="text-sm font-medium text-ink hover:text-accent-text transition-colors">
+              <Link
+                href={dashboardHref}
+                className="text-sm font-medium text-ink hover:text-accent-text transition-colors"
+              >
                 Dashboard
               </Link>
               {user?.role === "participant" && (
-                <Link href="/profile" className="text-sm font-medium text-ink hover:text-accent-text transition-colors">
+                <Link
+                  href="/profile"
+                  className="text-sm font-medium text-ink hover:text-accent-text transition-colors"
+                >
                   Profile
                 </Link>
               )}
               {user?.role === "admin" && (
-                <Link href="/admin/judges" className="text-sm font-medium text-ink hover:text-accent-text transition-colors">
+                <Link
+                  href="/admin/judges"
+                  className="text-sm font-medium text-ink hover:text-accent-text transition-colors"
+                >
                   Judges
                 </Link>
               )}
               <NotificationBell />
-              <button onClick={handleLogout} className="text-sm text-ink-muted hover:text-accent-text transition-colors">
+              <button
+                onClick={handleLogout}
+                className="text-sm text-ink-muted hover:text-accent-text transition-colors"
+              >
                 Log out
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="text-sm font-medium text-ink hover:text-accent-text transition-colors">
+              <Link
+                href="/login"
+                className="text-sm font-medium text-ink hover:text-accent-text transition-colors"
+              >
                 Log in
               </Link>
               <Link

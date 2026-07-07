@@ -41,15 +41,26 @@ module.exports = {
       },
       fontFamily: {
         display: ["var(--font-poppins)", "ui-sans-serif", "sans-serif"],
-        sans: ["var(--font-roboto)", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", '"SF Mono"', "Menlo", "Consolas", "monospace"],
+        sans: [
+          "var(--font-roboto)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        mono: [
+          "var(--font-mono)",
+          '"SF Mono"',
+          "Menlo",
+          "Consolas",
+          "monospace",
+        ],
       },
       backgroundImage: {
         "sprocket-line":
           "repeating-linear-gradient(to right, currentColor 0, currentColor 3px, transparent 3px, transparent 14px)",
       },
       boxShadow: {
-        glow: "0 8px 24px -8px rgba(7, 207, 181, 0.35)",
+        glow: "0 8px 24px -8px #07CFB559",
       },
     },
   },

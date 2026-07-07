@@ -41,7 +41,11 @@ function SubmissionForm() {
       await api.postForm(`/contests/${id}/submissions/${round}`, formData);
       router.push(`/contests/${id}`);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : "Could not submit your photo.");
+      setError(
+        err instanceof ApiClientError
+          ? err.message
+          : "Could not submit your photo.",
+      );
     } finally {
       setLoading(false);
     }
@@ -53,27 +57,40 @@ function SubmissionForm() {
         Submit your {round === "final" ? "Final" : "Round 1"} photo
       </h1>
       <p className="mt-2 text-sm text-accent-text">
-        This is a one-shot upload — once submitted, it can't be edited or replaced.
+        This is a one-shot upload — once submitted, it can't be edited or
+        replaced.
       </p>
 
       <Card className="mt-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-ink-muted">Photo</label>
+            <label className="text-xs font-medium uppercase tracking-wide text-ink-muted">
+              Photo
+            </label>
             <input
               type="file"
               accept="image/*"
               onChange={handleFileChange}
               required
-              className="mt-1.5 block w-full text-sm text-ink-muted file:mr-4 file:rounded-xl file:border-0 file:bg-ink file:px-4 file:py-2 file:text-sm file:text-white hover:file:bg-ink/90"
+              className="mt-1.5 block w-full text-sm text-ink-muted file:mr-4 file:rounded-xl file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-accent-hover"
             />
             {preview && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview} alt="Preview of your upload" className="mt-4 max-h-80 w-full rounded-xl border border-hairline object-contain" />
+              <img
+                src={preview}
+                alt="Preview of your upload"
+                className="mt-4 max-h-80 w-full rounded-xl border border-hairline object-contain"
+              />
             )}
           </div>
 
-          <Input id="title" label="Title" required value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Input
+            id="title"
+            label="Title"
+            required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
           <Textarea
             id="description"
             label="Description (optional)"
