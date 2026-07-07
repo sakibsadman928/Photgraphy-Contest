@@ -60,7 +60,7 @@ module.exports = {
           "repeating-linear-gradient(to right, currentColor 0, currentColor 3px, transparent 3px, transparent 14px)",
       },
       boxShadow: {
-        glow: "0 8px 24px -8px #07CFB559",
+        glow: "0 8px 24px -8px #07CFB5",
       },
     },
   },
