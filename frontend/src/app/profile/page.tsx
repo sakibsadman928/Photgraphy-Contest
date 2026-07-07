@@ -61,7 +61,7 @@ function ProfileForm() {
             value={form.bio}
             onChange={(e) => setForm({ ...form, bio: e.target.value })}
           />
-          {error && <p className="text-sm text-accent">{error}</p>}
+          {error && <p className="text-sm text-accent-text">{error}</p>}
           {status === "saved" && <p className="text-sm text-teal">Saved.</p>}
           <Button type="submit" loading={status === "saving"} className="mt-2 w-full">
             Save changes

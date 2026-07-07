@@ -29,7 +29,7 @@ function DashboardContent() {
           <Card>
             <p className="text-ink-muted">
               You haven't entered any contests yet.{" "}
-              <Link href="/contests" className="text-accent hover:underline">
+              <Link href="/contests" className="text-accent-text hover:underline">
                 Browse open contests
               </Link>
               .

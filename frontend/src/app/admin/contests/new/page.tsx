@@ -141,7 +141,7 @@ function CreateContestForm() {
             <button
               type="button"
               onClick={() => setCriteria([...criteria, { name: "", maxPoints: 20 }])}
-              className="flex items-center gap-1 text-sm text-accent hover:underline"
+              className="flex items-center gap-1 text-sm text-accent-text hover:underline"
             >
               <Plus size={14} /> Add criterion
             </button>
@@ -167,7 +167,7 @@ function CreateContestForm() {
                   <button
                     type="button"
                     onClick={() => setCriteria(criteria.filter((_, idx) => idx !== i))}
-                    className="text-ink-muted hover:text-accent"
+                    className="text-ink-muted hover:text-accent-text"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -200,7 +200,7 @@ function CreateContestForm() {
           )}
         </Card>
 
-        {error && <p className="text-sm text-accent">{error}</p>}
+        {error && <p className="text-sm text-accent-text">{error}</p>}
         <Button type="submit" loading={loading}>
           Create contest
         </Button>

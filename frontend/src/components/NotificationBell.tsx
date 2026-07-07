@@ -25,7 +25,7 @@ export default function NotificationBell() {
       >
         <Bell size={18} />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] text-white">
+          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] font-semibold text-ink">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -40,7 +40,7 @@ export default function NotificationBell() {
                 Notifications
               </span>
               {unreadCount > 0 && (
-                <button onClick={handleMarkAllRead} className="text-xs text-accent hover:underline">
+                <button onClick={handleMarkAllRead} className="text-xs text-accent-text hover:underline">
                   Mark all read
                 </button>
               )}

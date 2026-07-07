@@ -2,23 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Camera } from "lucide-react";
 import { api } from "@/lib/api";
 import { Contest } from "@/types";
 import ContestCard from "@/components/ContestCard";
 import FrameDivider from "@/components/ui/FrameDivider";
 import Button from "@/components/ui/Button";
 
-const GRID_GRADIENTS = [
-  "from-violet-500 to-fuchsia-500",
-  "from-fuchsia-500 to-pink-400",
-  "from-amber-400 to-orange-500",
-  "from-pink-400 to-rose-400",
-  "from-violet-600 to-indigo-500",
-  "from-teal-400 to-emerald-400",
-  "from-orange-400 to-amber-300",
-  "from-indigo-500 to-violet-400",
-  "from-emerald-400 to-teal-300",
-];
+// Drop real photo URLs in here (e.g. Cloudinary URLs of standout submissions).
+// Empty slots render a placeholder tile instead of breaking the layout.
+const HERO_IMAGES: string[] = ["", "", "", "", "", "", "", "", ""];
 
 export default function HomePage() {
   const [contests, setContests] = useState<Contest[] | null>(null);
@@ -34,10 +27,10 @@ export default function HomePage() {
     <div>
       <section className="grid gap-10 py-10 md:grid-cols-[1.2fr_1fr] md:items-end">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.25em] text-accent font-medium">
+          <p className="font-mono text-xs uppercase tracking-[0.25em] text-accent-text font-medium">
             Photography Competition Platform
           </p>
-          <h1 className="mt-4 max-w-xl font-display font-extrabold text-5xl leading-[1.05] text-transparent bg-clip-text bg-brand-gradient">
+          <h1 className="mt-4 max-w-xl font-display font-extrabold text-5xl leading-[1.05] text-ink">
             Every entry is a frame worth judging.
           </h1>
           <p className="mt-6 max-w-md text-ink-muted">
@@ -54,12 +47,24 @@ export default function HomePage() {
           </div>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {GRID_GRADIENTS.map((gradient, i) => (
-            <div
-              key={i}
-              className={`aspect-square rounded-xl bg-gradient-to-br ${gradient} shadow-sm`}
-            />
-          ))}
+          {HERO_IMAGES.map((src, i) =>
+            src ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={src}
+                alt=""
+                className="aspect-square rounded-xl border border-hairline object-cover shadow-sm"
+              />
+            ) : (
+              <div
+                key={i}
+                className="flex aspect-square items-center justify-center rounded-xl border border-dashed border-hairline bg-paper"
+              >
+                <Camera size={20} className="text-ink-muted/40" />
+              </div>
+            )
+          )}
         </div>
       </section>
 
@@ -81,3 +86,4 @@ export default function HomePage() {
     </div>
   );
 }
+

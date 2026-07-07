@@ -8,12 +8,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary:
-    "bg-brand-gradient text-white shadow-glow hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0",
+  primary: "bg-accent text-ink shadow-glow hover:bg-accent-hover hover:-translate-y-0.5 active:translate-y-0",
   secondary:
-    "bg-white text-ink border border-hairline hover:border-accent hover:text-accent hover:-translate-y-0.5",
-  ghost: "bg-transparent text-ink hover:bg-accent/5 hover:text-accent",
-  danger: "bg-pink text-white hover:bg-pink/90 hover:-translate-y-0.5",
+    "bg-white text-ink border border-hairline hover:border-accent hover:text-accent-text hover:-translate-y-0.5",
+  ghost: "bg-transparent text-ink hover:bg-accent/10 hover:text-accent-text",
+  danger: "bg-ink text-white hover:bg-ink/90 hover:-translate-y-0.5",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(

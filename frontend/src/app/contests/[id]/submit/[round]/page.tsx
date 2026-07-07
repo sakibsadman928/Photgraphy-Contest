@@ -52,7 +52,7 @@ function SubmissionForm() {
       <h1 className="font-display text-3xl text-ink">
         Submit your {round === "final" ? "Final" : "Round 1"} photo
       </h1>
-      <p className="mt-2 text-sm text-accent">
+      <p className="mt-2 text-sm text-accent-text">
         This is a one-shot upload — once submitted, it can't be edited or replaced.
       </p>
 
@@ -82,7 +82,7 @@ function SubmissionForm() {
             onChange={(e) => setDescription(e.target.value)}
           />
 
-          {error && <p className="text-sm text-accent">{error}</p>}
+          {error && <p className="text-sm text-accent-text">{error}</p>}
           <Button type="submit" loading={loading} className="mt-2 w-full">
             Lock in submission
           </Button>

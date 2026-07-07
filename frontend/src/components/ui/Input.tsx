@@ -22,7 +22,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       )}
       <input ref={ref} id={id} className={`${fieldClasses} ${className}`} {...props} />
       {hint && !error && <span className="text-xs text-ink-muted">{hint}</span>}
-      {error && <span className="text-xs text-accent">{error}</span>}
+      {error && <span className="text-xs text-accent-text">{error}</span>}
     </div>
   )
 );
@@ -38,7 +38,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       )}
       <textarea ref={ref} id={id} className={`${fieldClasses} ${className}`} {...props} />
       {hint && !error && <span className="text-xs text-ink-muted">{hint}</span>}
-      {error && <span className="text-xs text-accent">{error}</span>}
+      {error && <span className="text-xs text-accent-text">{error}</span>}
     </div>
   )
 );

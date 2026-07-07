@@ -61,7 +61,7 @@ function ChangePasswordForm() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
-          {error && <p className="text-sm text-accent">{error}</p>}
+          {error && <p className="text-sm text-accent-text">{error}</p>}
           <Button type="submit" loading={loading} className="mt-2 w-full">
             Set password
           </Button>

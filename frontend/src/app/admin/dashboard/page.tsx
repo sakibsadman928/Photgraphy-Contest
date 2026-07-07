@@ -58,7 +58,7 @@ function DashboardContent() {
       </div>
 
       <div className="mt-10">
-        <Link href="/admin/contests" className="text-sm text-accent hover:underline">
+        <Link href="/admin/contests" className="text-sm text-accent-text hover:underline">
           View all contests →
         </Link>
       </div>

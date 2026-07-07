@@ -4,35 +4,40 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        paper: "#F8F7FF",
+        // Neutral system: background, surface, text. No color tint anywhere in these.
+        paper: "#FAFAFA",
         surface: "#FFFFFF",
-        ink: "#161329",
-        "ink-muted": "#6B6787",
-        hairline: "#E7E4F7",
+        ink: "#111827",
+        "ink-muted": "#6B7280",
+        hairline: "#E5E7EB",
+
+        // ONE brand color, in two lightnesses (same hue, chosen for contrast — not two colors):
+        // - DEFAULT (#07CFB5): vivid, for solid fills only (buttons, badges, glow, focus rings).
+        //   Always pair with dark `ink` text/icons on top — white-on-this fails contrast.
+        // - text (#0F766E): darker shade of the same teal, for text/links/icons placed directly
+        //   on white/light backgrounds, where the vivid shade itself is too light to read.
         accent: {
-          DEFAULT: "#7C3AED",
-          hover: "#6D28D9",
+          DEFAULT: "#07CFB5",
+          hover: "#05B39C",
+          text: "#0F766E",
+          light: "#E1FBF7",
         },
-        pink: {
-          DEFAULT: "#EC4899",
-          light: "#FCE7F3",
-        },
-        teal: {
-          DEFAULT: "#10B981",
-          light: "#D1FAE5",
-        },
-        amber: {
-          DEFAULT: "#F59E0B",
-          light: "#FEF3C7",
-        },
+
+        // Old token names aliased to the same one accent color, so every existing class in the
+        // app resolves consistently without needing to touch every file individually.
+        teal: { DEFAULT: "#0F766E", light: "#E1FBF7" },
+        amber: { DEFAULT: "#6B7280", light: "#F3F4F6" }, // "in progress" -> neutral grey, not a warning color
+        pink: { DEFAULT: "#111827", light: "#F3F4F6" }, // destructive -> solid ink, not a separate hue
+
         darkroom: {
-          DEFAULT: "#0E0B1F",
-          surface: "#1C1836",
-          hairline: "#332D57",
-          ink: "#F5F3FF",
-          "ink-muted": "#A79FD1",
+          DEFAULT: "#0E0E10",
+          surface: "#1A1A1D",
+          hairline: "#2C2C30",
+          ink: "#F5F5F5",
+          "ink-muted": "#8E8E93",
         },
-        safelight: "#F472B6",
+        // Same brand teal, glowing on dark — one color everywhere, including the judging screen.
+        safelight: "#07CFB5",
       },
       fontFamily: {
         display: ["var(--font-poppins)", "ui-sans-serif", "sans-serif"],
@@ -42,13 +47,11 @@ module.exports = {
       backgroundImage: {
         "sprocket-line":
           "repeating-linear-gradient(to right, currentColor 0, currentColor 3px, transparent 3px, transparent 14px)",
-        "brand-gradient": "linear-gradient(135deg, #7C3AED 0%, #EC4899 100%)",
       },
       boxShadow: {
-        glow: "0 8px 30px -8px rgba(124, 58, 237, 0.35)",
+        glow: "0 8px 24px -8px rgba(7, 207, 181, 0.35)",
       },
     },
   },
   plugins: [],
 };
-

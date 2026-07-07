@@ -70,7 +70,7 @@ export default function RegisterPage() {
             value={form.country}
             onChange={(e) => setForm({ ...form, country: e.target.value })}
           />
-          {error && <p className="text-sm text-accent">{error}</p>}
+          {error && <p className="text-sm text-accent-text">{error}</p>}
           <Button type="submit" loading={loading} className="mt-2 w-full">
             Create account
           </Button>
@@ -78,7 +78,7 @@ export default function RegisterPage() {
       </Card>
       <p className="mt-4 text-center text-sm text-ink-muted">
         Already have an account?{" "}
-        <Link href="/login" className="text-accent hover:underline">
+        <Link href="/login" className="text-accent-text hover:underline">
           Log in
         </Link>
       </p>

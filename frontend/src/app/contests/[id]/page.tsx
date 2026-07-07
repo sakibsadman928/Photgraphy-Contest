@@ -110,7 +110,7 @@ export default function ContestDetailsPage() {
       </div>
 
       {contest.status === "cancelled" && (
-        <p className="mt-4 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent">
+        <p className="mt-4 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent-text">
           This contest was cancelled. {contest.cancelReason}
         </p>
       )}
@@ -166,7 +166,7 @@ export default function ContestDetailsPage() {
               contest.status === "registration_open" && now < new Date(contest.registrationDeadline) ? (
                 <div>
                   <p className="text-sm text-ink-muted">You're not registered for this contest yet.</p>
-                  {actionError && <p className="mt-2 text-sm text-accent">{actionError}</p>}
+                  {actionError && <p className="mt-2 text-sm text-accent-text">{actionError}</p>}
                   <Button onClick={handleJoin} loading={joining} className="mt-4">
                     Join contest
                   </Button>
@@ -247,14 +247,14 @@ export default function ContestDetailsPage() {
 
       {["round1_results_published", "final_open", "final_closed", "completed"].includes(contest.status) && (
         <p className="mt-8 text-center">
-          <Link href={`/contests/${id}/leaderboard/round1`} className="text-sm text-accent hover:underline">
+          <Link href={`/contests/${id}/leaderboard/round1`} className="text-sm text-accent-text hover:underline">
             View Round 1 leaderboard
           </Link>
         </p>
       )}
       {contest.status === "completed" && (
         <p className="mt-2 text-center">
-          <Link href={`/contests/${id}/leaderboard/final`} className="text-sm text-accent hover:underline">
+          <Link href={`/contests/${id}/leaderboard/final`} className="text-sm text-accent-text hover:underline">
             View Final leaderboard
           </Link>
         </p>

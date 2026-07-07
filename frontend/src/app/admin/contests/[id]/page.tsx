@@ -153,7 +153,7 @@ function ManageContestContent() {
       </div>
 
       {message && (
-        <p className={`mt-4 text-sm ${message.type === "error" ? "text-accent" : "text-teal"}`}>{message.text}</p>
+        <p className={`mt-4 text-sm ${message.type === "error" ? "text-accent-text" : "text-teal"}`}>{message.text}</p>
       )}
 
       <FrameDivider label="Lifecycle" />
@@ -163,7 +163,7 @@ function ManageContestContent() {
         </p>
 
         {contest.status === "cancelled" && (
-          <p className="mt-3 text-sm text-accent">Cancelled: {contest.cancelReason}</p>
+          <p className="mt-3 text-sm text-accent-text">Cancelled: {contest.cancelReason}</p>
         )}
 
         {progress && currentRound && (
@@ -267,7 +267,7 @@ function ManageContestContent() {
                     ) : (
                       <button
                         onClick={() => setReplacingJudgeId(judgeObj?._id ?? (j.judge as string))}
-                        className="text-xs text-accent hover:underline"
+                        className="text-xs text-accent-text hover:underline"
                       >
                         Replace (unresponsive)
                       </button>

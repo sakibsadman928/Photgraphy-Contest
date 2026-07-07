@@ -20,7 +20,7 @@ export default function ContestCard({ contest }: { contest: Contest }) {
         <StatusBadge status={contest.status} />
       </div>
       <div className="p-5">
-        <h3 className="font-display text-xl text-ink group-hover:text-accent">{contest.title}</h3>
+        <h3 className="font-display text-xl text-ink group-hover:text-accent-text">{contest.title}</h3>
         <dl className="mt-4 grid grid-cols-2 gap-3 font-mono text-xs text-ink-muted">
           <div>
             <dt className="uppercase tracking-wide">Registration closes</dt>

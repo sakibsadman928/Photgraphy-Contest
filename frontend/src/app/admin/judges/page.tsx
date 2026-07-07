@@ -75,7 +75,7 @@ function JudgesContent() {
             Create
           </Button>
         </form>
-        {error && <p className="mt-3 text-sm text-accent">{error}</p>}
+        {error && <p className="mt-3 text-sm text-accent-text">{error}</p>}
 
         {createdCredentials && (
           <div className="mt-4 rounded-xl border border-teal/30 bg-teal-light px-4 py-3 text-sm text-teal">

@@ -35,7 +35,7 @@ export default function LeaderboardPage() {
       </h1>
       <FrameDivider />
 
-      {error && <p className="text-sm text-accent">{error}</p>}
+      {error && <p className="text-sm text-accent-text">{error}</p>}
 
       {!entries && !error && <p className="font-mono text-sm text-ink-muted">Loading…</p>}
 

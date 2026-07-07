@@ -63,7 +63,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          {error && <p className="text-sm text-accent">{error}</p>}
+          {error && <p className="text-sm text-accent-text">{error}</p>}
           <Button type="submit" loading={loading} className="mt-2 w-full">
             Log in
           </Button>
@@ -71,7 +71,7 @@ export default function LoginPage() {
       </Card>
       <p className="mt-4 text-center text-sm text-ink-muted">
         New here?{" "}
-        <Link href="/register" className="text-accent hover:underline">
+        <Link href="/register" className="text-accent-text hover:underline">
           Create an account
         </Link>
       </p>
