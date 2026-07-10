@@ -18,24 +18,12 @@ const STATUS_CONFIG: Record<ContestStatus, { label: string; classes: string }> =
       label: "Cancelled",
       classes: "bg-ink/5 text-ink-muted border-ink/20",
     },
-    round1_open: {
-      label: "Round 1 · Open",
+    submissions_open: {
+      label: "Submissions Open",
       classes: "bg-teal-light text-teal border-teal/30",
     },
-    round1_closed: {
-      label: "Round 1 · Judging",
-      classes: "bg-amber-light text-amber border-amber/30",
-    },
-    round1_results_published: {
-      label: "Round 1 · Results Published",
-      classes: "bg-teal-light text-teal border-teal/30",
-    },
-    final_open: {
-      label: "Final · Open",
-      classes: "bg-teal-light text-teal border-teal/30",
-    },
-    final_closed: {
-      label: "Final · Judging",
+    submissions_closed: {
+      label: "Judging",
       classes: "bg-amber-light text-amber border-amber/30",
     },
     completed: {

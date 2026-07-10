@@ -35,9 +35,9 @@ export default function ContestCard({ contest }: { contest: Contest }) {
             </dd>
           </div>
           <div>
-            <dt className="uppercase tracking-wide">Finalists</dt>
+            <dt className="uppercase tracking-wide">Submission deadline</dt>
             <dd className="mt-0.5 text-ink">
-              {contest.finalistsPercentage}% advance
+              {formatDate(contest.submissionDeadline)}
             </dd>
           </div>
         </dl>

@@ -9,11 +9,11 @@ import { asyncHandler } from "../utils";
 export const participantDashboard = asyncHandler(async (req: Request, res: Response) => {
   const participations = await ContestParticipant.find({ participant: req.user!.id }).populate(
     "contest",
-    "title theme status registrationDeadline round1Deadline finalDeadline"
+    "title theme status registrationDeadline submissionDeadline"
   );
 
   const submissions = await Submission.find({ participant: req.user!.id }).select(
-    "contest round title averageScore createdAt"
+    "contest title averageScore createdAt"
   );
 
   res.json({ participations, submissions });
@@ -26,14 +26,12 @@ export const judgeDashboard = asyncHandler(async (req: Request, res: Response) =
 
   const dashboard = await Promise.all(
     contests.map(async (contest) => {
-      const round: "round1" | "final" | null =
-        contest.status === "round1_closed" ? "round1" : contest.status === "final_closed" ? "final" : null;
+      const judging = contest.status === "submissions_closed";
+      if (!judging) return { contest, judging: false, pending: 0, completed: 0 };
 
-      if (!round) return { contest, pending: 0, completed: 0 };
-
-      const totalSubmissions = await Submission.countDocuments({ contest: contest._id, round });
-      const completed = await Score.countDocuments({ contest: contest._id, round, judge: req.user!.id });
-      return { contest, round, pending: totalSubmissions - completed, completed };
+      const totalSubmissions = await Submission.countDocuments({ contest: contest._id });
+      const completed = await Score.countDocuments({ contest: contest._id, judge: req.user!.id });
+      return { contest, judging: true, pending: totalSubmissions - completed, completed };
     })
   );
 

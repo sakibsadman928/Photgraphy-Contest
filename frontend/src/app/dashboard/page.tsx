@@ -43,8 +43,7 @@ function DashboardContent() {
               <div>
                 <p className="font-display text-lg text-ink">{p.contest.title}</p>
                 <p className="mt-1 font-mono text-xs text-ink-muted">
-                  Round 1: {p.round1Result.replace("_", " ")}
-                  {p.finalResult !== "not_applicable" && ` · Final: ${p.finalResult.replace("_", " ")}`}
+                  {p.result.replace("_", " ")}
                 </p>
               </div>
               <StatusBadge status={p.contest.status} />

@@ -8,8 +8,8 @@ import ContestCard from "@/components/ContestCard";
 const FILTERS: { label: string; value: ContestStatus | "all" }[] = [
   { label: "All", value: "all" },
   { label: "Registration Open", value: "registration_open" },
-  { label: "Round 1", value: "round1_open" },
-  { label: "Final", value: "final_open" },
+  { label: "Submissions Open", value: "submissions_open" },
+  { label: "Judging", value: "submissions_closed" },
   { label: "Completed", value: "completed" },
 ];
 

@@ -1,23 +1,22 @@
 export type UserRole = "admin" | "judge" | "participant";
 
+// Single-round lifecycle: no more Round1 -> Final split.
+// draft -> registration_open -> registration_closed -> submissions_open
+//       -> submissions_closed (judging) -> completed
+// "cancelled" can happen at "close registration" if too few participants joined.
 export type ContestStatus =
   | "draft"
   | "registration_open"
   | "registration_closed"
   | "cancelled"
-  | "round1_open"
-  | "round1_closed"
-  | "round1_results_published"
-  | "final_open"
-  | "final_closed"
+  | "submissions_open"
+  | "submissions_closed"
   | "completed";
 
-export type RoundType = "round1" | "final";
-
-export type Round1Result = "pending" | "advanced" | "eliminated" | "no_submission";
-
-export type FinalResult =
-  | "not_applicable" // did not reach the final
+// Replaces the old Round1Result/FinalResult pair now that there's only one round.
+// Only the top 3 ranked submissions are awarded; everyone else who submitted is
+// "eliminated", and anyone registered who never submitted is "no_submission".
+export type ParticipantResult =
   | "pending"
   | "winner"
   | "second"

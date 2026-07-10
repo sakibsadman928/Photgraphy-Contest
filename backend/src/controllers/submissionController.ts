@@ -5,10 +5,8 @@ import Submission from "../models/Submission";
 import { ApiError, asyncHandler } from "../utils";
 import { notifyUser } from "../services/notificationService";
 import { uploadImageBuffer } from "../config/cloudinary";
-import { RoundType } from "../types";
 
 export const createSubmission = asyncHandler(async (req: Request, res: Response) => {
-  const round = req.params.round as RoundType;
   const { title, description } = req.body;
   const file = req.file;
 
@@ -21,27 +19,20 @@ export const createSubmission = asyncHandler(async (req: Request, res: Response)
   const participation = await ContestParticipant.findOne({ contest: contest._id, participant: req.user!.id });
   if (!participation) throw new ApiError(403, "You are not registered for this contest");
 
-  if (round === "round1") {
-    if (contest.status !== "round1_open") throw new ApiError(400, "Round 1 submissions are not currently open");
-    if (new Date() > contest.round1Deadline) throw new ApiError(400, "The Round 1 submission deadline has passed");
-  } else if (round === "final") {
-    if (contest.status !== "final_open") throw new ApiError(400, "The Final round is not currently open");
-    if (new Date() > contest.finalDeadline) throw new ApiError(400, "The Final submission deadline has passed");
-    if (participation.round1Result !== "advanced") {
-      throw new ApiError(403, "Only finalists may submit to the Final round");
-    }
-  } else {
-    throw new ApiError(400, "Invalid round");
+  if (contest.status !== "submissions_open") {
+    throw new ApiError(400, "Submissions are not currently open");
+  }
+  if (new Date() > contest.submissionDeadline) {
+    throw new ApiError(400, "The submission deadline has passed");
   }
 
-  const existing = await Submission.findOne({ contest: contest._id, round, participant: req.user!.id });
-  if (existing) throw new ApiError(409, "You have already submitted for this round — resubmission is not allowed");
+  const existing = await Submission.findOne({ contest: contest._id, participant: req.user!.id });
+  if (existing) throw new ApiError(409, "You have already submitted — resubmission is not allowed");
 
   const uploaded = await uploadImageBuffer(file.buffer, "photo-contest-platform/submissions");
 
   const submission = await Submission.create({
     contest: contest._id,
-    round,
     participant: req.user!.id,
     title,
     description,
@@ -54,12 +45,10 @@ export const createSubmission = asyncHandler(async (req: Request, res: Response)
   res.status(201).json({ submission });
 });
 
-/** A participant viewing their own submission for a round (e.g. to confirm it locked in). */
+/** A participant viewing their own submission for a contest (e.g. to confirm it locked in). */
 export const getMySubmission = asyncHandler(async (req: Request, res: Response) => {
-  const round = req.params.round as RoundType;
   const submission = await Submission.findOne({
     contest: req.params.id,
-    round,
     participant: req.user!.id,
   });
   res.json({ submission });

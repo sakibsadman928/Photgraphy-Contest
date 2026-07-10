@@ -1,5 +1,4 @@
 import { Schema, model, Document, Types } from "mongoose";
-import { RoundType } from "../types";
 
 export interface ICriterionScore {
   name: string;
@@ -10,7 +9,6 @@ export interface IScore extends Document {
   _id: Types.ObjectId;
   submission: Types.ObjectId;
   contest: Types.ObjectId;
-  round: RoundType;
   judge: Types.ObjectId;
   criteriaScores: ICriterionScore[];
   totalScore: number;
@@ -31,7 +29,6 @@ const scoreSchema = new Schema<IScore>(
   {
     submission: { type: Schema.Types.ObjectId, ref: "Submission", required: true },
     contest: { type: Schema.Types.ObjectId, ref: "Contest", required: true },
-    round: { type: String, enum: ["round1", "final"], required: true },
     judge: { type: Schema.Types.ObjectId, ref: "User", required: true },
     criteriaScores: { type: [criterionScoreSchema], required: true },
     totalScore: { type: Number, required: true },

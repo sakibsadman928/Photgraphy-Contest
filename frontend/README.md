@@ -4,6 +4,11 @@ Next.js (App Router, latest) + TypeScript + Tailwind CSS + Redux Toolkit
 (auth + notifications only). Talks to the Express backend entirely over
 REST with `credentials: 'include'` so the httpOnly auth cookie is sent.
 
+> **Note:** This frontend targets the **single competitive round** backend
+> (no Round 1 / Final split). Contests go through registration → submissions →
+> judging → results, and only the top 3 submissions are awarded — Winner,
+> 2nd, 3rd.
+
 ## Local setup
 
 ```bash
@@ -77,6 +82,16 @@ src/
 └── types/                shared TypeScript types matching the backend's domain model
 ```
 
+### Routes touching a contest (single round, no `[round]` segment)
+
+| Route | Who | Purpose |
+|---|---|---|
+| `/contests/:id` | everyone | Contest details, join, entry status |
+| `/contests/:id/submit` | participant | One-shot photo upload |
+| `/contests/:id/leaderboard` | everyone (once completed) | Final ranked results |
+| `/judge/contests/:id` | judge | Blind scoring screen |
+| `/admin/contests/:id` | admin | Lifecycle actions, judge progress, tie resolution |
+
 ## Design notes
 
 - **Palette/type**: a cool "light table" theme (paper/ink/hairline + a
@@ -88,3 +103,6 @@ src/
   plain `fetch` and local component state — no caching library, per the
   project's deliberate simplicity tradeoff.
 - **Live updates**: notifications poll every 20s. No WebSockets.
+- **Tie-breaking**: unchanged from the two-round design — Creativity →
+  Theme Relevance → admin manual resolution — now only ever checked at the
+  1st/2nd/3rd award boundaries.

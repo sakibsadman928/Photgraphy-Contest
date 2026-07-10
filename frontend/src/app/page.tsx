@@ -35,8 +35,8 @@ export default function HomePage() {
           </h1>
           <p className="mt-6 max-w-md text-ink-muted">
             Register, submit photo, and get scored on the merits — composition,
-            light, and craft. Two rounds, one winner, no favoritism: judges
-            never see who took the shot.
+            light, and craft. One round, one winner, no favoritism: judges never
+            see who took the shot.
           </p>
           <div className="mt-8 flex gap-3">
             <Link href="/contests">
@@ -49,13 +49,14 @@ export default function HomePage() {
         </div>
         <div className="grid grid-cols-3 gap-2">
           {HERO_IMAGE ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={HERO_IMAGE}
               alt=""
-              className="aspect-square w-full rounded-xl border border-hairline object-cover shadow-sm"
+              className="aspect-[3/2] w-full rounded-xl border border-hairline object-cover shadow-sm"
             />
           ) : (
-            <div className="flex aspect-square w-full items-center justify-center rounded-xl border border-dashed border-hairline bg-paper">
+            <div className="flex aspect-[3/2] w-full items-center justify-center rounded-xl border border-dashed border-hairline bg-paper">
               <Camera size={40} className="text-ink-muted/40" />
             </div>
           )}

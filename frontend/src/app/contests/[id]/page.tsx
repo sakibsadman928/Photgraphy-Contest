@@ -12,8 +12,7 @@ import Button from "@/components/ui/Button";
 import FrameDivider from "@/components/ui/FrameDivider";
 
 interface Participation {
-  round1Result: string;
-  finalResult: string;
+  result: string;
 }
 
 function formatDate(iso: string) {
@@ -26,15 +25,7 @@ function formatDate(iso: string) {
   });
 }
 
-const ROUND1_RESULT_LABEL: Record<string, string> = {
-  pending: "Awaiting results",
-  advanced: "Advanced to Final",
-  eliminated: "Not selected to advance",
-  no_submission: "No submission received",
-};
-
-const FINAL_RESULT_LABEL: Record<string, string> = {
-  not_applicable: "",
+const RESULT_LABEL: Record<string, string> = {
   pending: "Awaiting results",
   winner: "🏆 Winner",
   second: "2nd place",
@@ -49,8 +40,7 @@ export default function ContestDetailsPage() {
 
   const [data, setData] = useState<{ contest: Contest; registeredCount: number } | null>(null);
   const [participation, setParticipation] = useState<Participation | null>(null);
-  const [round1Submission, setRound1Submission] = useState<Submission | null>(null);
-  const [finalSubmission, setFinalSubmission] = useState<Submission | null>(null);
+  const [submission, setSubmission] = useState<Submission | null>(null);
   const [actionError, setActionError] = useState("");
   const [joining, setJoining] = useState(false);
 
@@ -59,14 +49,12 @@ export default function ContestDetailsPage() {
     setData(contestData);
 
     if (isAuthenticated && user?.role === "participant") {
-      const [p, r1, fin] = await Promise.all([
+      const [p, sub] = await Promise.all([
         api.get<{ participation: Participation | null }>(`/contests/${id}/participation`),
-        api.get<{ submission: Submission | null }>(`/contests/${id}/submissions/round1/mine`),
-        api.get<{ submission: Submission | null }>(`/contests/${id}/submissions/final/mine`),
+        api.get<{ submission: Submission | null }>(`/contests/${id}/submissions/mine`),
       ]);
       setParticipation(p.participation);
-      setRound1Submission(r1.submission);
-      setFinalSubmission(fin.submission);
+      setSubmission(sub.submission);
     }
   }, [id, isAuthenticated, user]);
 
@@ -122,20 +110,12 @@ export default function ContestDetailsPage() {
             <dd className="mt-1 text-ink">{formatDate(contest.registrationDeadline)}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-ink-muted">Round 1 closes</dt>
-            <dd className="mt-1 text-ink">{formatDate(contest.round1Deadline)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-ink-muted">Final closes</dt>
-            <dd className="mt-1 text-ink">{formatDate(contest.finalDeadline)}</dd>
+            <dt className="text-xs uppercase tracking-wide text-ink-muted">Submission deadline</dt>
+            <dd className="mt-1 text-ink">{formatDate(contest.submissionDeadline)}</dd>
           </div>
           <div>
             <dt className="text-xs uppercase tracking-wide text-ink-muted">Registered</dt>
             <dd className="mt-1 text-ink">{registeredCount}</dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-ink-muted">Finalists</dt>
-            <dd className="mt-1 text-ink">{contest.finalistsPercentage}% advance</dd>
           </div>
           <div>
             <dt className="text-xs uppercase tracking-wide text-ink-muted">Judges</dt>
@@ -175,39 +155,18 @@ export default function ContestDetailsPage() {
                 <p className="text-sm text-ink-muted">Registration isn't open for this contest.</p>
               )
             ) : (
-              <div className="flex flex-col gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-ink-muted">Round 1</p>
-                  <p className="mt-1 text-ink">
-                    {round1Submission
-                      ? `Submitted: "${round1Submission.title}"`
-                      : ROUND1_RESULT_LABEL[participation.round1Result]}
-                  </p>
-                  {!round1Submission && contest.status === "round1_open" && (
-                    <Link href={`/contests/${id}/submit/round1`}>
-                      <Button variant="secondary" className="mt-2">
-                        Submit your Round 1 photo
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-
-                {participation.round1Result === "advanced" && (
-                  <div className="border-t border-hairline pt-4">
-                    <p className="text-xs uppercase tracking-wide text-ink-muted">Final</p>
-                    <p className="mt-1 text-ink">
-                      {finalSubmission
-                        ? `Submitted: "${finalSubmission.title}"`
-                        : FINAL_RESULT_LABEL[participation.finalResult] || "Awaiting the Final round"}
-                    </p>
-                    {!finalSubmission && contest.status === "final_open" && (
-                      <Link href={`/contests/${id}/submit/final`}>
-                        <Button variant="secondary" className="mt-2">
-                          Submit your Final photo
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
+              <div>
+                <p className="text-ink">
+                  {submission
+                    ? `Submitted: "${submission.title}"`
+                    : RESULT_LABEL[participation.result]}
+                </p>
+                {!submission && contest.status === "submissions_open" && (
+                  <Link href={`/contests/${id}/submit`}>
+                    <Button variant="secondary" className="mt-2">
+                      Submit your photo
+                    </Button>
+                  </Link>
                 )}
               </div>
             )}
@@ -219,13 +178,9 @@ export default function ContestDetailsPage() {
         <>
           <FrameDivider label="Judging" />
           <Card>
-            {contest.status === "round1_closed" ? (
-              <Link href={`/judge/contests/${id}/round1`}>
-                <Button>Score Round 1 submissions</Button>
-              </Link>
-            ) : contest.status === "final_closed" ? (
-              <Link href={`/judge/contests/${id}/final`}>
-                <Button>Score Final submissions</Button>
+            {contest.status === "submissions_closed" ? (
+              <Link href={`/judge/contests/${id}`}>
+                <Button>Score submissions</Button>
               </Link>
             ) : (
               <p className="text-sm text-ink-muted">Not currently open for judging.</p>
@@ -245,17 +200,10 @@ export default function ContestDetailsPage() {
         </>
       )}
 
-      {["round1_results_published", "final_open", "final_closed", "completed"].includes(contest.status) && (
-        <p className="mt-8 text-center">
-          <Link href={`/contests/${id}/leaderboard/round1`} className="text-sm text-accent-text hover:underline">
-            View Round 1 leaderboard
-          </Link>
-        </p>
-      )}
       {contest.status === "completed" && (
-        <p className="mt-2 text-center">
-          <Link href={`/contests/${id}/leaderboard/final`} className="text-sm text-accent-text hover:underline">
-            View Final leaderboard
+        <p className="mt-8 text-center">
+          <Link href={`/contests/${id}/leaderboard`} className="text-sm text-accent-text hover:underline">
+            View leaderboard
           </Link>
         </p>
       )}

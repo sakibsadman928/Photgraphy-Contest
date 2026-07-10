@@ -18,9 +18,7 @@ export interface IContest extends Document {
   title: string;
   theme: string;
   registrationDeadline: Date;
-  round1Deadline: Date;
-  finalDeadline: Date;
-  finalistsPercentage: number; // e.g. 20 means 20%
+  submissionDeadline: Date;
   scoringCriteria: IScoringCriterion[];
   judges: IContestJudge[];
   status: ContestStatus;
@@ -53,9 +51,7 @@ const contestSchema = new Schema<IContest>(
     title: { type: String, required: true, trim: true },
     theme: { type: String, required: true, trim: true },
     registrationDeadline: { type: Date, required: true },
-    round1Deadline: { type: Date, required: true },
-    finalDeadline: { type: Date, required: true },
-    finalistsPercentage: { type: Number, required: true, min: 1, max: 100 },
+    submissionDeadline: { type: Date, required: true },
     scoringCriteria: {
       type: [scoringCriterionSchema],
       required: true,
@@ -69,11 +65,8 @@ const contestSchema = new Schema<IContest>(
         "registration_open",
         "registration_closed",
         "cancelled",
-        "round1_open",
-        "round1_closed",
-        "round1_results_published",
-        "final_open",
-        "final_closed",
+        "submissions_open",
+        "submissions_closed",
         "completed",
       ],
       default: "draft",

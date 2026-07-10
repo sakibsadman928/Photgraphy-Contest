@@ -6,21 +6,16 @@ import {
   publishContest,
   joinContest,
   closeRegistration,
-  openRound1,
-  closeRound1,
-  getRound1Progress,
-  publishRound1,
-  resolveRound1Tie,
-  openFinal,
-  closeFinal,
-  getFinalProgress,
-  publishFinal,
-  resolveFinalTie,
+  openSubmissions,
+  closeSubmissions,
+  getProgress,
+  publishContestResults,
+  resolveContestTie,
   addJudgeToContest,
   replaceJudge,
   getLeaderboard,
   getMyParticipation,
-  getRoundSubmissionsForAdmin,
+  getSubmissionsForAdmin,
 } from "../controllers/contestController";
 import { createSubmission, getMySubmission } from "../controllers/submissionController";
 import { listSubmissionsToJudge } from "../controllers/scoreController";
@@ -32,42 +27,36 @@ const router = Router();
 // ── Public browsing — no auth required ───────────────────────────────
 router.get("/", listContests);
 router.get("/:id", getContest);
-router.get("/:id/leaderboard/:round", getLeaderboard);
+router.get("/:id/leaderboard", getLeaderboard);
 
 // ── Admin: creation & lifecycle ──────────────────────────────────────
 router.post("/", protect, restrictTo("admin"), createContest);
 router.post("/:id/publish", protect, restrictTo("admin"), publishContest);
 router.post("/:id/close-registration", protect, restrictTo("admin"), closeRegistration);
 
-router.post("/:id/round1/open", protect, restrictTo("admin"), openRound1);
-router.post("/:id/round1/close", protect, restrictTo("admin"), closeRound1);
-router.get("/:id/round1/progress", protect, restrictTo("admin"), getRound1Progress);
-router.post("/:id/round1/publish-results", protect, restrictTo("admin"), publishRound1);
-router.post("/:id/round1/resolve-tie", protect, restrictTo("admin"), resolveRound1Tie);
-
-router.post("/:id/final/open", protect, restrictTo("admin"), openFinal);
-router.post("/:id/final/close", protect, restrictTo("admin"), closeFinal);
-router.get("/:id/final/progress", protect, restrictTo("admin"), getFinalProgress);
-router.post("/:id/final/publish-winners", protect, restrictTo("admin"), publishFinal);
-router.post("/:id/final/resolve-tie", protect, restrictTo("admin"), resolveFinalTie);
+router.post("/:id/submissions/open", protect, restrictTo("admin"), openSubmissions);
+router.post("/:id/submissions/close", protect, restrictTo("admin"), closeSubmissions);
+router.get("/:id/progress", protect, restrictTo("admin"), getProgress);
+router.post("/:id/publish-results", protect, restrictTo("admin"), publishContestResults);
+router.post("/:id/resolve-tie", protect, restrictTo("admin"), resolveContestTie);
 
 router.post("/:id/judges", protect, restrictTo("admin"), addJudgeToContest);
 router.post("/:id/judges/:judgeId/replace", protect, restrictTo("admin"), replaceJudge);
-router.get("/:id/submissions/:round/all", protect, restrictTo("admin"), getRoundSubmissionsForAdmin);
+router.get("/:id/submissions/all", protect, restrictTo("admin"), getSubmissionsForAdmin);
 
 // ── Participant actions ───────────────────────────────────────────────
 router.get("/:id/participation", protect, restrictTo("participant"), getMyParticipation);
 router.post("/:id/join", protect, restrictTo("participant"), joinContest);
 router.post(
-  "/:id/submissions/:round",
+  "/:id/submissions",
   protect,
   restrictTo("participant"),
   upload.single("photo"),
   createSubmission
 );
-router.get("/:id/submissions/:round/mine", protect, restrictTo("participant"), getMySubmission);
+router.get("/:id/submissions/mine", protect, restrictTo("participant"), getMySubmission);
 
 // ── Judge actions ──────────────────────────────────────────────────────
-router.get("/:id/submissions/:round/to-judge", protect, restrictTo("judge"), listSubmissionsToJudge);
+router.get("/:id/submissions/to-judge", protect, restrictTo("judge"), listSubmissionsToJudge);
 
 export default router;

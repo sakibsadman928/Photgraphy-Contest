@@ -10,7 +10,7 @@ import RequireRole from "@/components/RequireRole";
 
 interface DashboardEntry {
   contest: Contest;
-  round?: "round1" | "final";
+  judging: boolean;
   pending: number;
   completed: number;
 }
@@ -46,10 +46,9 @@ function DashboardContent() {
           >
             <div>
               <p className="font-display text-lg text-ink">{e.contest.title}</p>
-              {e.round ? (
+              {e.judging ? (
                 <p className="mt-1 font-mono text-xs text-ink-muted">
-                  {e.round === "round1" ? "Round 1" : "Final"} · {e.completed}{" "}
-                  scored, {e.pending} pending
+                  {e.completed} scored, {e.pending} pending
                 </p>
               ) : (
                 <p className="mt-1 font-mono text-xs text-ink-muted">
@@ -59,9 +58,9 @@ function DashboardContent() {
             </div>
             <div className="flex items-center gap-3">
               <StatusBadge status={e.contest.status} />
-              {e.round && (
+              {e.judging && (
                 <Link
-                  href={`/judge/contests/${e.contest._id}/${e.round}`}
+                  href={`/judge/contests/${e.contest._id}`}
                   className="rounded-xl bg-accent px-3 py-1.5 text-sm font-medium text-ink hover:bg-accent-hover"
                 >
                   Score

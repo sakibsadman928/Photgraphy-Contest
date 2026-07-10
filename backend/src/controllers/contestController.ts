@@ -6,13 +6,11 @@ import User from "../models/User";
 import { ApiError, asyncHandler } from "../utils";
 import {
   getJudgingProgress,
-  publishRound1Results,
-  publishFinalResults,
+  publishResults,
   resolveTie,
   getPublishedLeaderboard,
 } from "../services/competitionEngine";
 import { notifyUsers } from "../services/notificationService";
-import { RoundType } from "../types";
 
 const MIN_PARTICIPANTS = 5;
 
@@ -25,32 +23,19 @@ function assertStatus(contest: { status: string }, expected: string, action: str
 // ── Creation & browsing ──────────────────────────────────────────────
 
 export const createContest = asyncHandler(async (req: Request, res: Response) => {
-  const {
-    title,
-    theme,
-    registrationDeadline,
-    round1Deadline,
-    finalDeadline,
-    finalistsPercentage,
-    scoringCriteria,
-    judgeIds,
-  } = req.body;
+  const { title, theme, registrationDeadline, submissionDeadline, scoringCriteria, judgeIds } = req.body;
 
-  if (!title || !theme || !registrationDeadline || !round1Deadline || !finalDeadline) {
-    throw new ApiError(400, "title, theme, registrationDeadline, round1Deadline, and finalDeadline are required");
+  if (!title || !theme || !registrationDeadline || !submissionDeadline) {
+    throw new ApiError(400, "title, theme, registrationDeadline, and submissionDeadline are required");
   }
   if (!Array.isArray(scoringCriteria) || scoringCriteria.length === 0) {
     throw new ApiError(400, "At least one scoring criterion is required");
   }
-  if (!finalistsPercentage || finalistsPercentage <= 0 || finalistsPercentage > 100) {
-    throw new ApiError(400, "finalistsPercentage must be between 1 and 100");
-  }
 
   const regDate = new Date(registrationDeadline);
-  const r1Date = new Date(round1Deadline);
-  const finalDate = new Date(finalDeadline);
-  if (!(regDate < r1Date && r1Date < finalDate)) {
-    throw new ApiError(400, "Deadlines must be strictly increasing: registration < round1 < final");
+  const subDate = new Date(submissionDeadline);
+  if (!(regDate < subDate)) {
+    throw new ApiError(400, "Deadlines must be strictly increasing: registration < submission");
   }
 
   let judges: { judge: string; active: boolean }[] = [];
@@ -66,9 +51,7 @@ export const createContest = asyncHandler(async (req: Request, res: Response) =>
     title,
     theme,
     registrationDeadline: regDate,
-    round1Deadline: r1Date,
-    finalDeadline: finalDate,
-    finalistsPercentage,
+    submissionDeadline: subDate,
     scoringCriteria,
     judges,
     status: "draft",
@@ -109,7 +92,7 @@ export const publishContest = asyncHandler(async (req: Request, res: Response) =
   res.json({ contest });
 });
 
-/** Lets the logged-in participant check their own registration/round status for a contest. */
+/** Lets the logged-in participant check their own registration/result status for a contest. */
 export const getMyParticipation = asyncHandler(async (req: Request, res: Response) => {
   const participation = await ContestParticipant.findOne({
     contest: req.params.id,
@@ -162,103 +145,53 @@ export const closeRegistration = asyncHandler(async (req: Request, res: Response
   res.json({ contest, cancelled: false, registeredCount });
 });
 
-// ── Lifecycle: Round 1 ────────────────────────────────────────────────
+// ── Lifecycle: Submissions & Judging ──────────────────────────────────
 
-export const openRound1 = asyncHandler(async (req: Request, res: Response) => {
+export const openSubmissions = asyncHandler(async (req: Request, res: Response) => {
   const contest = await Contest.findById(req.params.id);
   if (!contest) throw new ApiError(404, "Contest not found");
-  assertStatus(contest, "registration_closed", "open Round 1");
+  assertStatus(contest, "registration_closed", "open submissions");
 
-  contest.status = "round1_open";
+  contest.status = "submissions_open";
   await contest.save();
 
   const participants = await ContestParticipant.find({ contest: contest._id });
   await notifyUsers(
     participants.map((p) => p.participant),
-    "round_opened_for_judging",
-    `Round 1 submissions are now open for "${contest.title}".`,
+    "submissions_opened",
+    `Submissions are now open for "${contest.title}".`,
     contest._id
   );
 
   res.json({ contest });
 });
 
-export const closeRound1 = asyncHandler(async (req: Request, res: Response) => {
+export const closeSubmissions = asyncHandler(async (req: Request, res: Response) => {
   const contest = await Contest.findById(req.params.id);
   if (!contest) throw new ApiError(404, "Contest not found");
-  assertStatus(contest, "round1_open", "close Round 1");
+  assertStatus(contest, "submissions_open", "close submissions");
 
-  contest.status = "round1_closed";
+  contest.status = "submissions_closed";
   await contest.save();
   res.json({ contest });
 });
 
-export const getRound1Progress = asyncHandler(async (req: Request, res: Response) => {
-  const progress = await getJudgingProgress(req.params.id, "round1");
+export const getProgress = asyncHandler(async (req: Request, res: Response) => {
+  const progress = await getJudgingProgress(req.params.id);
   res.json(progress);
 });
 
-export const publishRound1 = asyncHandler(async (req: Request, res: Response) => {
-  const result = await publishRound1Results(req.params.id);
-  res.json({ message: "Round 1 results published", ...result });
+export const publishContestResults = asyncHandler(async (req: Request, res: Response) => {
+  const result = await publishResults(req.params.id);
+  res.json({ message: "Results published", ...result });
 });
 
-export const resolveRound1Tie = asyncHandler(async (req: Request, res: Response) => {
+export const resolveContestTie = asyncHandler(async (req: Request, res: Response) => {
   const { submissionIds, winnerSubmissionId, note } = req.body;
   if (!Array.isArray(submissionIds) || submissionIds.length < 2 || !winnerSubmissionId) {
     throw new ApiError(400, "submissionIds (2+) and winnerSubmissionId are required");
   }
-  const resolution = await resolveTie(req.params.id, "round1", submissionIds, winnerSubmissionId, req.user!.id, note);
-  res.status(201).json({ resolution });
-});
-
-// ── Lifecycle: Final ──────────────────────────────────────────────────
-
-export const openFinal = asyncHandler(async (req: Request, res: Response) => {
-  const contest = await Contest.findById(req.params.id);
-  if (!contest) throw new ApiError(404, "Contest not found");
-  assertStatus(contest, "round1_results_published", "open the Final");
-
-  contest.status = "final_open";
-  await contest.save();
-
-  const finalists = await ContestParticipant.find({ contest: contest._id, round1Result: "advanced" });
-  await notifyUsers(
-    finalists.map((p) => p.participant),
-    "round_opened_for_judging",
-    `The Final round is now open for "${contest.title}". Submit your photo before the deadline!`,
-    contest._id
-  );
-
-  res.json({ contest });
-});
-
-export const closeFinal = asyncHandler(async (req: Request, res: Response) => {
-  const contest = await Contest.findById(req.params.id);
-  if (!contest) throw new ApiError(404, "Contest not found");
-  assertStatus(contest, "final_open", "close the Final");
-
-  contest.status = "final_closed";
-  await contest.save();
-  res.json({ contest });
-});
-
-export const getFinalProgress = asyncHandler(async (req: Request, res: Response) => {
-  const progress = await getJudgingProgress(req.params.id, "final");
-  res.json(progress);
-});
-
-export const publishFinal = asyncHandler(async (req: Request, res: Response) => {
-  const result = await publishFinalResults(req.params.id);
-  res.json({ message: "Final results published", ...result });
-});
-
-export const resolveFinalTie = asyncHandler(async (req: Request, res: Response) => {
-  const { submissionIds, winnerSubmissionId, note } = req.body;
-  if (!Array.isArray(submissionIds) || submissionIds.length < 2 || !winnerSubmissionId) {
-    throw new ApiError(400, "submissionIds (2+) and winnerSubmissionId are required");
-  }
-  const resolution = await resolveTie(req.params.id, "final", submissionIds, winnerSubmissionId, req.user!.id, note);
+  const resolution = await resolveTie(req.params.id, submissionIds, winnerSubmissionId, req.user!.id, note);
   res.status(201).json({ resolution });
 });
 
@@ -329,27 +262,24 @@ export const replaceJudge = asyncHandler(async (req: Request, res: Response) => 
 
 // ── Leaderboard ───────────────────────────────────────────────────────
 
-/** Admin-only: view all submissions in a round with participant identity visible — used to preview
+/** Admin-only: view all submissions with participant identity visible — used to preview
  * standings before publishing and to see who's involved when resolving a tie. */
-export const getRoundSubmissionsForAdmin = asyncHandler(async (req: Request, res: Response) => {
-  const round = req.params.round as RoundType;
-  const submissions = await Submission.find({ contest: req.params.id, round })
+export const getSubmissionsForAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const submissions = await Submission.find({ contest: req.params.id })
     .populate("participant", "name email country")
     .sort({ averageScore: -1 });
   res.json({ submissions });
 });
 
 export const getLeaderboard = asyncHandler(async (req: Request, res: Response) => {
-  const round = req.params.round as RoundType;
   const contest = await Contest.findById(req.params.id);
   if (!contest) throw new ApiError(404, "Contest not found");
 
-  const visibleForRound1 = ["round1_results_published", "final_open", "final_closed", "completed"];
-  const visibleForFinal = ["completed"];
-  const visible = round === "round1" ? visibleForRound1.includes(contest.status) : visibleForFinal.includes(contest.status);
-  if (!visible) throw new ApiError(403, "Results for this round have not been published yet");
+  if (contest.status !== "completed") {
+    throw new ApiError(403, "Results for this contest have not been published yet");
+  }
 
-  const ranked = await getPublishedLeaderboard(req.params.id, round);
+  const ranked = await getPublishedLeaderboard(req.params.id);
   const populated = await Submission.populate(
     ranked.map((r) => r.submission),
     { path: "participant", select: "name country profilePhotoUrl" }

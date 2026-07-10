@@ -1,7 +1,7 @@
 {
   "name": "photo-contest-backend",
   "version": "1.0.0",
-  "description": "Backend API for the Photography Competition Platform",
+  "description": "Backend API for the Photography Competition Platform (single-round)",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
@@ -21,8 +21,7 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.0",
-    "multer": "^2.0.0",
-    "next": "^16.2.10"
+    "multer": "^2.0.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

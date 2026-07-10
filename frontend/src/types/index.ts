@@ -11,19 +11,15 @@ export interface User {
   mustChangePassword?: boolean;
 }
 
+// Single-round lifecycle: no more Round1 -> Final split.
 export type ContestStatus =
   | "draft"
   | "registration_open"
   | "registration_closed"
   | "cancelled"
-  | "round1_open"
-  | "round1_closed"
-  | "round1_results_published"
-  | "final_open"
-  | "final_closed"
+  | "submissions_open"
+  | "submissions_closed"
   | "completed";
-
-export type RoundType = "round1" | "final";
 
 export interface ScoringCriterion {
   name: string;
@@ -42,9 +38,7 @@ export interface Contest {
   title: string;
   theme: string;
   registrationDeadline: string;
-  round1Deadline: string;
-  finalDeadline: string;
-  finalistsPercentage: number;
+  submissionDeadline: string;
   scoringCriteria: ScoringCriterion[];
   judges: ContestJudge[];
   status: ContestStatus;
@@ -52,9 +46,9 @@ export interface Contest {
   createdAt: string;
 }
 
-export type Round1Result = "pending" | "advanced" | "eliminated" | "no_submission";
-export type FinalResult =
-  | "not_applicable"
+// Replaces the old Round1Result/FinalResult pair now that there's only one
+// round. Only the top 3 ranked submissions are awarded.
+export type ParticipantResult =
   | "pending"
   | "winner"
   | "second"
@@ -65,15 +59,13 @@ export type FinalResult =
 export interface ContestParticipation {
   _id: string;
   contest: Contest;
-  round1Result: Round1Result;
-  finalResult: FinalResult;
+  result: ParticipantResult;
   registeredAt: string;
 }
 
 export interface Submission {
   _id: string;
   contest: string;
-  round: RoundType;
   participant: string | { _id: string; name: string; country?: string; profilePhotoUrl?: string };
   title: string;
   description?: string;

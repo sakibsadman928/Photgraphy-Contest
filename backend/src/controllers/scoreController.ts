@@ -4,7 +4,6 @@ import Submission from "../models/Submission";
 import Score from "../models/Score";
 import { ApiError, asyncHandler } from "../utils";
 import { recomputeSubmissionAverage } from "../services/competitionEngine";
-import { RoundType } from "../types";
 
 function assertActiveJudgeOnContest(contest: any, judgeId: string) {
   const isActiveJudge = contest.judges.some((j: any) => j.judge.toString() === judgeId && j.active);
@@ -13,20 +12,18 @@ function assertActiveJudgeOnContest(contest: any, judgeId: string) {
 
 /** Anonymized submission list for a judge to score — no participant identity is included. */
 export const listSubmissionsToJudge = asyncHandler(async (req: Request, res: Response) => {
-  const round = req.params.round as RoundType;
   const contest = await Contest.findById(req.params.id);
   if (!contest) throw new ApiError(404, "Contest not found");
   assertActiveJudgeOnContest(contest, req.user!.id);
 
-  const judgingStatus = round === "round1" ? "round1_closed" : "final_closed";
-  if (contest.status !== judgingStatus) {
-    throw new ApiError(400, `Judging for ${round} is not currently open (contest status: ${contest.status})`);
+  if (contest.status !== "submissions_closed") {
+    throw new ApiError(400, `Judging is not currently open (contest status: ${contest.status})`);
   }
 
-  const submissions = await Submission.find({ contest: contest._id, round }).select(
+  const submissions = await Submission.find({ contest: contest._id }).select(
     "title description photoUrl createdAt"
   );
-  const myScores = await Score.find({ contest: contest._id, round, judge: req.user!.id });
+  const myScores = await Score.find({ contest: contest._id, judge: req.user!.id });
   const scoredIds = new Set(myScores.map((s) => s.submission.toString()));
 
   res.json({
@@ -53,9 +50,8 @@ export const submitScore = asyncHandler(async (req: Request, res: Response) => {
   if (!contest) throw new ApiError(404, "Contest not found");
   assertActiveJudgeOnContest(contest, req.user!.id);
 
-  const judgingStatus = submission.round === "round1" ? "round1_closed" : "final_closed";
-  if (contest.status !== judgingStatus) {
-    throw new ApiError(400, `Judging for ${submission.round} is not currently open`);
+  if (contest.status !== "submissions_closed") {
+    throw new ApiError(400, "Judging is not currently open");
   }
 
   // Validate each criterion against the contest's configured rubric.
@@ -70,13 +66,12 @@ export const submitScore = asyncHandler(async (req: Request, res: Response) => {
     totalScore += cs.score;
   }
 
-  // Upsert: judge can edit their score until results for this round are published.
+  // Upsert: judge can edit their score until results are published.
   const score = await Score.findOneAndUpdate(
     { submission: submissionId, judge: req.user!.id },
     {
       submission: submissionId,
       contest: contest._id,
-      round: submission.round,
       judge: req.user!.id,
       criteriaScores,
       totalScore,

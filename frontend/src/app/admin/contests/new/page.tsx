@@ -24,9 +24,7 @@ function CreateContestForm() {
     title: "",
     theme: "",
     registrationDeadline: "",
-    round1Deadline: "",
-    finalDeadline: "",
-    finalistsPercentage: 20,
+    submissionDeadline: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,8 +61,7 @@ function CreateContestForm() {
       const data = await api.post<{ contest: { _id: string } }>("/contests", {
         ...form,
         registrationDeadline: new Date(form.registrationDeadline).toISOString(),
-        round1Deadline: new Date(form.round1Deadline).toISOString(),
-        finalDeadline: new Date(form.finalDeadline).toISOString(),
+        submissionDeadline: new Date(form.submissionDeadline).toISOString(),
         scoringCriteria: criteria,
         judgeIds: selectedJudgeIds,
       });
@@ -96,7 +93,7 @@ function CreateContestForm() {
             value={form.theme}
             onChange={(e) => setForm({ ...form, theme: e.target.value })}
           />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
               id="registrationDeadline"
               label="Registration deadline"
@@ -106,33 +103,15 @@ function CreateContestForm() {
               onChange={(e) => setForm({ ...form, registrationDeadline: e.target.value })}
             />
             <Input
-              id="round1Deadline"
-              label="Round 1 deadline"
+              id="submissionDeadline"
+              label="Submission deadline"
               type="datetime-local"
               required
-              value={form.round1Deadline}
-              onChange={(e) => setForm({ ...form, round1Deadline: e.target.value })}
-            />
-            <Input
-              id="finalDeadline"
-              label="Final deadline"
-              type="datetime-local"
-              required
-              value={form.finalDeadline}
-              onChange={(e) => setForm({ ...form, finalDeadline: e.target.value })}
+              hint="Must be after the registration deadline"
+              value={form.submissionDeadline}
+              onChange={(e) => setForm({ ...form, submissionDeadline: e.target.value })}
             />
           </div>
-          <Input
-            id="finalistsPercentage"
-            label="Finalists percentage"
-            type="number"
-            min={1}
-            max={100}
-            required
-            hint="e.g. 20 means top 20% advance to the Final (minimum 2, always)"
-            value={form.finalistsPercentage}
-            onChange={(e) => setForm({ ...form, finalistsPercentage: Number(e.target.value) })}
-          />
         </Card>
 
         <Card>

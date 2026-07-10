@@ -4,12 +4,9 @@ export type NotificationType =
   | "registration_confirmed"
   | "contest_cancelled"
   | "submission_received"
-  | "advanced_to_final"
-  | "eliminated"
-  | "round1_results_published"
-  | "final_results_published"
-  | "judge_assigned"
-  | "round_opened_for_judging";
+  | "submissions_opened"
+  | "results_published"
+  | "judge_assigned";
 
 export interface INotification extends Document {
   _id: Types.ObjectId;

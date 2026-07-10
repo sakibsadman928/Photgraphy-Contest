@@ -5,7 +5,6 @@ import Submission, { ISubmission } from "../models/Submission";
 import Score from "../models/Score";
 import TieResolution from "../models/TieResolution";
 import { ApiError } from "../utils";
-import { RoundType } from "../types";
 import { notifyUser } from "./notificationService";
 
 // Tie-break criteria, checked in this exact order. These must match the
@@ -27,22 +26,21 @@ export function getActiveJudgeIds(contest: IContest): string[] {
 }
 
 /**
- * Checks whether every active judge has scored every submission in a round.
+ * Checks whether every active judge has scored every submission in the contest.
  * Returns per-judge progress so the admin dashboard can show live counters.
  */
-export async function getJudgingProgress(contestId: string, round: RoundType) {
+export async function getJudgingProgress(contestId: string) {
   const contest = await Contest.findById(contestId);
   if (!contest) throw new ApiError(404, "Contest not found");
 
   const activeJudgeIds = getActiveJudgeIds(contest);
-  const submissions = await Submission.find({ contest: contestId, round });
+  const submissions = await Submission.find({ contest: contestId });
   const totalSubmissions = submissions.length;
 
   const progress = await Promise.all(
     activeJudgeIds.map(async (judgeId) => {
       const scoredCount = await Score.countDocuments({
         contest: contestId,
-        round,
         judge: judgeId,
       });
       return { judgeId, scoredCount, totalSubmissions };
@@ -64,10 +62,10 @@ export async function recomputeSubmissionAverage(submissionId: Types.ObjectId | 
   return average;
 }
 
-/** Builds the ranked leaderboard for a round, incorporating any prior tie resolutions. */
-export async function buildRankedList(contestId: string, round: RoundType): Promise<RankedEntry[]> {
-  const submissions = await Submission.find({ contest: contestId, round });
-  const resolutions = await TieResolution.find({ contest: contestId, round });
+/** Builds the ranked leaderboard for the contest, incorporating any prior tie resolutions. */
+export async function buildRankedList(contestId: string): Promise<RankedEntry[]> {
+  const submissions = await Submission.find({ contest: contestId });
+  const resolutions = await TieResolution.find({ contest: contestId });
 
   // Map: submissionId -> 0 if it won its tie group, 1 otherwise (only submissions
   // that appeared in a resolution get a defined priority; everyone else is untouched).
@@ -145,7 +143,6 @@ function findUnresolvedBoundaryTie(
  */
 export async function resolveTie(
   contestId: string,
-  round: RoundType,
   submissionIds: string[],
   winnerSubmissionId: string,
   resolvedBy: string,
@@ -155,14 +152,13 @@ export async function resolveTie(
     throw new ApiError(400, "Winner must be one of the tied submissions");
   }
 
-  const submissions = await Submission.find({ _id: { $in: submissionIds }, contest: contestId, round });
+  const submissions = await Submission.find({ _id: { $in: submissionIds }, contest: contestId });
   if (submissions.length !== submissionIds.length) {
-    throw new ApiError(404, "One or more tied submissions were not found in this contest/round");
+    throw new ApiError(404, "One or more tied submissions were not found in this contest");
   }
 
   const resolution = await TieResolution.create({
     contest: contestId,
-    round,
     submissionIds,
     winnerSubmission: winnerSubmissionId,
     resolvedBy,
@@ -175,110 +171,37 @@ export async function resolveTie(
 }
 
 /** Public helper: returns submissions in true competition-engine rank order (score + tiebreaks + resolutions). */
-export async function getPublishedLeaderboard(contestId: string, round: RoundType) {
-  const ranked = await buildRankedList(contestId, round);
+export async function getPublishedLeaderboard(contestId: string) {
+  const ranked = await buildRankedList(contestId);
   return ranked.map((entry, i) => ({ submission: entry.submission, rank: i + 1 }));
 }
 
-export function calculateFinalistCount(registeredCount: number, finalistsPercentage: number): number {
-  return Math.max(2, Math.ceil((registeredCount * finalistsPercentage) / 100));
-}
-
 /**
- * Attempts to publish Round 1 results. Runs the full competition engine:
- * averages -> ranking -> finalist cutoff -> tie check -> advance/eliminate.
+ * Attempts to publish contest results. Runs the full competition engine:
+ * averages -> ranking -> tie check at each award boundary (1st/2nd/3rd) ->
+ * award winner/second/third; everyone else who submitted is eliminated.
  *
- * Throws (409) with tie details if a consequential tie blocks the cutoff —
- * the admin must resolve it via resolveTie() and call this again.
+ * Throws (409) with tie details if a consequential tie blocks an award
+ * position — the admin must resolve it via resolveTie() and call this again.
  */
-export async function publishRound1Results(contestId: string) {
+export async function publishResults(contestId: string) {
   const contest = await Contest.findById(contestId);
   if (!contest) throw new ApiError(404, "Contest not found");
-  if (contest.status !== "round1_closed") {
-    throw new ApiError(400, `Cannot publish Round 1 results while contest is '${contest.status}'`);
+  if (contest.status !== "submissions_closed") {
+    throw new ApiError(400, `Cannot publish results while contest is '${contest.status}'`);
   }
 
-  const progress = await getJudgingProgress(contestId, "round1");
+  const progress = await getJudgingProgress(contestId);
   if (!progress.complete) {
     throw new ApiError(409, "All assigned judges must finish scoring before results can be published", {
       progress: progress.progress,
     });
   }
 
-  const ranked = await buildRankedList(contestId, "round1");
+  const ranked = await buildRankedList(contestId);
 
-  const registeredCount = await ContestParticipant.countDocuments({ contest: contestId });
-  const finalistCount = Math.min(
-    calculateFinalistCount(registeredCount, contest.finalistsPercentage),
-    ranked.length
-  );
-
-  const tieGroup = findUnresolvedBoundaryTie(ranked, finalistCount);
-  if (tieGroup) {
-    await Submission.updateMany(
-      { _id: { $in: tieGroup.map((e) => e.submission._id) } },
-      { tieStatus: "pending" }
-    );
-    throw new ApiError(409, "A tie at the finalist cutoff needs admin resolution before publishing", {
-      tiedSubmissionIds: tieGroup.map((e) => e.submission._id),
-    });
-  }
-
-  const advancedIds = new Set(ranked.slice(0, finalistCount).map((e) => e.submission.participant.toString()));
-
-  // Anyone who submitted but isn't in the advanced set is eliminated.
-  for (const entry of ranked) {
-    const participantId = entry.submission.participant.toString();
-    const result = advancedIds.has(participantId) ? "advanced" : "eliminated";
-    await ContestParticipant.updateOne(
-      { contest: contestId, participant: participantId },
-      { round1Result: result }
-    );
-    await notifyUser(
-      participantId,
-      result === "advanced" ? "advanced_to_final" : "eliminated",
-      result === "advanced"
-        ? `You advanced to the Final in "${contest.title}"!`
-        : `Round 1 results are in for "${contest.title}" — you were not selected to advance.`,
-      contest._id
-    );
-  }
-
-  // Anyone registered but with no submission was already excluded from ranking;
-  // make sure their status reflects that.
-  await ContestParticipant.updateMany(
-    { contest: contestId, round1Result: "pending" },
-    { round1Result: "no_submission" }
-  );
-
-  await Submission.updateMany({ contest: contestId, round: "round1" }, { tieStatus: "none" });
-  contest.status = "round1_results_published";
-  await contest.save();
-
-  return { finalistCount, advancedParticipantIds: Array.from(advancedIds) };
-}
-
-/**
- * Attempts to publish the Final results (1st/2nd/3rd). Same engine pattern as
- * Round 1, but checks ties at each award boundary (1v2, 2v3, 3v4) rather than
- * a single cutoff, since each position is its own award.
- */
-export async function publishFinalResults(contestId: string) {
-  const contest = await Contest.findById(contestId);
-  if (!contest) throw new ApiError(404, "Contest not found");
-  if (contest.status !== "final_closed") {
-    throw new ApiError(400, `Cannot publish Final results while contest is '${contest.status}'`);
-  }
-
-  const progress = await getJudgingProgress(contestId, "final");
-  if (!progress.complete) {
-    throw new ApiError(409, "All assigned judges must finish scoring before winners can be published", {
-      progress: progress.progress,
-    });
-  }
-
-  const ranked = await buildRankedList(contestId, "final");
-
+  // Only the top 3 positions are awards, so those are the only boundaries
+  // that can block publishing on an unresolved tie.
   const awardBoundaries = [1, 2, 3].filter((pos) => pos < ranked.length);
   for (const boundary of awardBoundaries) {
     const tieGroup = findUnresolvedBoundaryTie(ranked, boundary);
@@ -297,31 +220,28 @@ export async function publishFinalResults(contestId: string) {
   for (let i = 0; i < ranked.length; i++) {
     const participantId = ranked[i].submission.participant.toString();
     const result = labels[i] ?? "eliminated";
-    await ContestParticipant.updateOne(
-      { contest: contestId, participant: participantId },
-      { finalResult: result }
-    );
+    await ContestParticipant.updateOne({ contest: contestId, participant: participantId }, { result });
   }
 
-  // Finalists who registered for the round but never submitted the Final photo.
-  const finalParticipants = await ContestParticipant.find({ contest: contestId, round1Result: "advanced" });
+  // Registered participants who never submitted a photo have no score to rank.
+  const allParticipants = await ContestParticipant.find({ contest: contestId });
   const submittedIds = new Set(ranked.map((e) => e.submission.participant.toString()));
-  for (const p of finalParticipants) {
-    if (!submittedIds.has(p.participant.toString()) && p.finalResult === "not_applicable") {
-      p.finalResult = "no_submission";
+  for (const p of allParticipants) {
+    if (!submittedIds.has(p.participant.toString()) && p.result === "pending") {
+      p.result = "no_submission";
       await p.save();
     }
   }
 
-  await Submission.updateMany({ contest: contestId, round: "final" }, { tieStatus: "none" });
+  await Submission.updateMany({ contest: contestId }, { tieStatus: "none" });
   contest.status = "completed";
   await contest.save();
 
-  for (const p of finalParticipants) {
+  for (const p of allParticipants) {
     await notifyUser(
       p.participant.toString(),
-      "final_results_published",
-      `Final results are published for "${contest.title}".`,
+      "results_published",
+      `Results are published for "${contest.title}".`,
       contest._id
     );
   }
